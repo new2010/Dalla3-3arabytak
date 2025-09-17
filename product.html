@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفاصيل المنتج - دلع عربيتك</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="nav">
+                <div class="logo">
+                    <h1>🚗 دلع عربيتك</h1>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html">الرئيسية</a>
+                    <a href="cart.html" class="cart-link">
+                        <span class="cart-icon">🛒</span>
+                        السلة <span id="cartCount" class="cart-count">0</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <div class="container">
+            <a href="index.html">الرئيسية</a>
+            <span>/</span>
+            <span id="breadcrumbCategory">المنتجات</span>
+            <span>/</span>
+            <span id="breadcrumbProduct">تفاصيل المنتج</span>
+        </div>
+    </div>
+
+    <!-- Product Details -->
+    <section class="product-details">
+        <div class="container">
+            <div id="loadingSpinner" class="loading">
+                <div class="spinner"></div>
+                <p>جاري تحميل تفاصيل المنتج...</p>
+            </div>
+            
+            <div id="productContent" class="product-content" style="display: none;">
+                <div class="product-image-section">
+                    <div class="main-image">
+                        <div id="productImage" class="image-placeholder">
+                            <p id="imageDescription">صورة المنتج</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="product-info-section">
+                    <div class="product-header">
+                        <h1 id="productName">اسم المنتج</h1>
+                        <div class="product-meta">
+                            <span id="productCategory" class="category-badge">الفئة</span>
+                            <div class="product-tags" id="productTags"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="price-section">
+                        <div id="productPrice" class="price">0 جنيه</div>
+                        <div id="stockStatus" class="stock-status">متوفر في المخزن</div>
+                    </div>
+                    
+                    <div class="description-section">
+                        <h3>وصف المنتج</h3>
+                        <p id="productShortDesc" class="short-description"></p>
+                        <div id="productLongDesc" class="long-description"></div>
+                    </div>
+                    
+                    <div class="add-to-cart-section">
+                        <div class="quantity-selector">
+                            <label for="quantity">الكمية:</label>
+                            <div class="quantity-controls">
+                                <button type="button" onclick="changeQuantity(-1)">-</button>
+                                <input type="number" id="quantity" value="1" min="1" max="10">
+                                <button type="button" onclick="changeQuantity(1)">+</button>
+                            </div>
+                        </div>
+                        
+                        <button id="addToCartBtn" class="btn btn-primary btn-large" onclick="addProductToCart()">
+                            إضافة إلى السلة
+                        </button>
+                        
+                        <button class="btn btn-secondary btn-large" onclick="buyNow()">
+                            اشتر الآن
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="productNotFound" class="not-found" style="display: none;">
+                <h2>المنتج غير موجود</h2>
+                <p>عذراً، لم يتم العثور على المنتج المطلوب</p>
+                <a href="index.html" class="btn btn-primary">العودة للرئيسية</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Related Products -->
+    <section class="related-products">
+        <div class="container">
+            <h2 class="section-title">منتجات ذات صلة</h2>
+            <div id="relatedGrid" class="products-grid"></div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>دلع عربيتك</h3>
+                    <p>أفضل متجر لإكسسوارات السيارات في مصر</p>
+                </div>
+                <div class="footer-section">
+                    <h4>روابط سريعة</h4>
+                    <ul>
+                        <li><a href="index.html">الرئيسية</a></li>
+                        <li><a href="cart.html">السلة</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>تواصل معنا</h4>
+                    <p>📞 01234567890</p>
+                    <p>📧 info@dalewcarabitak.com</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 دلع عربيتك. جميع الحقوق محفوظة.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast"></div>
+
+    <script src="config.js"></script>
+    <script src="assets/app.js"></script>
+    <script>
+        let currentProduct = null;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCartCount();
+            const productId = getProductIdFromURL();
+            if (productId) {
+                loadProduct(productId);
+            } else {
+                showProductNotFound();
+            }
+        });
+
+        // Get product ID from URL parameters
+        function getProductIdFromURL() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('id');
+        }
+
+        // Load product details from API
+        async function loadProduct(productId) {
+            try {
+                showSpinner(true);
+                const response = await fetch(`${API_BASE}?action=product&id=${productId}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const product = await response.json();
+                
+                if (product && product.id) {
+                    currentProduct = product;
+                    displayProduct(product);
+                    loadRelatedProducts(product.category);
+                } else {
+                    showProductNotFound();
+                }
+            } catch (error) {
+                console.error('Error loading product:', error);
+                showToast('فشل في تحميل المنتج. يرجى المحاولة مرة أخرى.', 'error');
+                showProductNotFound();
+            } finally {
+                showSpinner(false);
+            }
+        }
+
+        // Display product details
+        function displayProduct(product) {
+            document.getElementById('productContent').style.display = 'flex';
+            
+            // Update page title and breadcrumb
+            document.title = `${product.name} - دلع عربيتك`;
+            document.getElementById('breadcrumbCategory').textContent = product.category || 'المنتجات';
+            document.getElementById('breadcrumbProduct').textContent = product.name;
+            
+            // Update product information
+            document.getElementById('productName').textContent = product.name;
+            document.getElementById('imageDescription').textContent = product.image_desc || 'صورة المنتج';
+            document.getElementById('productCategory').textContent = product.category || '';
+            document.getElementById('productPrice').textContent = `${product.price} ${STORE_CONFIG.currency}`;
+            document.getElementById('productShortDesc').textContent = product.short_desc || '';
+            document.getElementById('productLongDesc').innerHTML = product.long_desc || '';
+            
+            // Update stock status
+            const stockStatus = document.getElementById('stockStatus');
+            if (product.stock && product.stock > 0) {
+                stockStatus.textContent = `متوفر (${product.stock} قطعة)`;
+                stockStatus.className = 'stock-status in-stock';
+                document.getElementById('addToCartBtn').disabled = false;
+            } else {
+                stockStatus.textContent = 'غير متوفر';
+                stockStatus.className = 'stock-status out-of-stock';
+                document.getElementById('addToCartBtn').disabled = true;
+            }
+            
+            // Update tags
+            const tagsContainer = document.getElementById('productTags');
+            if (product.tags) {
+                const tags = product.tags.split(',').map(tag => tag.trim()).filter(Boolean);
+                tagsContainer.innerHTML = tags.map(tag => 
+                    `<span class="tag">${tag}</span>`
+                ).join('');
+            }
+            
+            // Update quantity limits
+            const quantityInput = document.getElementById('quantity');
+            quantityInput.max = Math.min(product.stock || 10, 10);
+        }
+
+        // Load related products
+        async function loadRelatedProducts(category) {
+            try {
+                const response = await fetch(`${API_BASE}?action=products`);
+                const allProducts = await response.json();
+                
+                const related = allProducts
+                    .filter(p => p.category === category && p.id !== currentProduct.id)
+                    .slice(0, 4);
+                
+                if (related.length > 0) {
+                    displayRelatedProducts(related);
+                } else {
+                    document.querySelector('.related-products').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading related products:', error);
+                document.querySelector('.related-products').style.display = 'none';
+            }
+        }
+
+        // Display related products
+        function displayRelatedProducts(products) {
+            const container = document.getElementById('relatedGrid');
+            container.innerHTML = products.map(product => `
+                <div class="product-card">
+                    <div class="product-image">
+                        <div class="image-placeholder">
+                            <p>${product.image_desc || 'صورة المنتج'}</p>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">${product.name}</h3>
+                        <p class="product-desc">${product.short_desc || ''}</p>
+                        <div class="product-price">${product.price} ${STORE_CONFIG.currency}</div>
+                        <button onclick="window.location.href='product.html?id=${product.id}'" class="btn btn-primary">
+                            عرض التفاصيل
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Change quantity
+        function changeQuantity(delta) {
+            const quantityInput = document.getElementById('quantity');
+            const currentValue = parseInt(quantityInput.value);
+            const newValue = currentValue + delta;
+            const maxValue = parseInt(quantityInput.max);
+            
+            if (newValue >= 1 && newValue <= maxValue) {
+                quantityInput.value = newValue;
+            }
+        }
+
+        // Add product to cart
+        function addProductToCart() {
+            if (!currentProduct) return;
+            
+            const quantity = parseInt(document.getElementById('quantity').value);
+            
+            addToCart({
+                id: currentProduct.id,
+                name: currentProduct.name,
+                price: currentProduct.price,
+                quantity: quantity
+            });
+        }
+
+        // Buy now (add to cart and go to checkout)
+        function buyNow() {
+            addProductToCart();
+            setTimeout(() => {
+                window.location.href = 'cart.html';
+            }, 500);
+        }
+
+        // Show product not found
+        function showProductNotFound() {
+            document.getElementById('productContent').style.display = 'none';
+            document.getElementById('productNotFound').style.display = 'block';
+        }
+
+        // Show loading spinner
+        function showSpinner(show) {
+            document.getElementById('loadingSpinner').style.display = show ? 'flex' : 'none';
+        }
+    </script>
+</body>
+</html>
