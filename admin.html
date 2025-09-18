@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+# إنشاء صفحة الأدمن كاملة مع التصميم الجديد (أحمر غامق في أسود)
+complete_admin_html = """<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -343,7 +344,7 @@
             .form-row {
                 grid-template-columns: 1fr;
             }
-
+            
             .stats-grid {
                 grid-template-columns: 1fr;
             }
@@ -360,25 +361,25 @@
         <!-- قسم تسجيل الدخول -->
         <div id="loginSection" class="login-section">
             <h2 style="color: #DC143C; margin-bottom: 20px;">تسجيل دخول المدير</h2>
-
+            
             <div id="loginAlert"></div>
-
+            
             <div class="form-group">
                 <input type="password" id="adminPassword" placeholder="كلمة مرور الأدمن" value="New2010">
             </div>
-
+            
             <button class="btn btn-primary" onclick="login()">
                 <span id="loginBtn">دخول</span>
             </button>
-
+            
             <button class="btn btn-success" onclick="testAPI()">
                 اختبار الاتصال
             </button>
-
+            
             <button class="toggle-debug" onclick="toggleDebug()">
                 إظهار التشخيص
             </button>
-
+            
             <div id="debugSection" class="debug-section" style="display: none;">
                 <h3 style="color: #DC143C;">سجل التشخيص:</h3>
                 <div id="debugLog" class="debug-log">جاري تحميل نظام التشخيص...</div>
@@ -449,7 +450,7 @@
                                 <input type="number" id="productPrice" required placeholder="350" step="0.01">
                             </div>
                         </div>
-
+                        
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="productStock">الكمية المتوفرة *</label>
@@ -514,7 +515,7 @@
         // تحقق من الجلسة المحفوظة
         document.addEventListener('DOMContentLoaded', function() {
             addDebugLog('تم تحميل صفحة الأدمن');
-
+            
             const savedKey = sessionStorage.getItem('adminKey');
             if (savedKey) {
                 addDebugLog('تم العثور على جلسة محفوظة');
@@ -528,7 +529,7 @@
             const timestamp = now.toLocaleTimeString('ar-EG');
             const debugLog = document.getElementById('debugLog');
             if (debugLog) {
-                debugLog.textContent += `[${timestamp}] ${message}\n`;
+                debugLog.textContent += `[${timestamp}] ${message}\\n`;
                 debugLog.scrollTop = debugLog.scrollHeight;
             }
             console.log(`[${timestamp}] ${message}`);
@@ -539,7 +540,7 @@
             const debugSection = document.getElementById('debugSection');
             debugEnabled = !debugEnabled;
             debugSection.style.display = debugEnabled ? 'block' : 'none';
-
+            
             const toggleBtn = document.querySelector('.toggle-debug');
             toggleBtn.textContent = debugEnabled ? 'إخفاء التشخيص' : 'إظهار التشخيص';
         }
@@ -559,14 +560,14 @@
         async function testAPI() {
             addDebugLog('بدء اختبار API...');
             showAlert('جاري اختبار الاتصال...', 'info', 'loginAlert');
-
+            
             try {
                 const response = await fetch(API_BASE + '?action=test');
                 addDebugLog(`رد HTTP: ${response.status} ${response.statusText}`);
-
+                
                 const result = await response.json();
                 addDebugLog(`محتوى الرد: ${JSON.stringify(result)}`);
-
+                
                 if (result.success) {
                     showAlert('✅ الاتصال يعمل بنجاح!', 'success', 'loginAlert');
                 } else {
@@ -585,7 +586,7 @@
                 showAlert('يرجى إدخال كلمة المرور', 'error', 'loginAlert');
                 return;
             }
-
+            
             await verifyAdminKey(password);
         }
 
@@ -593,16 +594,16 @@
         async function verifyAdminKey(key) {
             showAlert('جاري التحقق من كلمة المرور...', 'info', 'loginAlert');
             addDebugLog('بدء التحقق من adminKey...');
-
+            
             try {
                 // استخدام orders endpoint للتحقق (يتجنب مشكلة CORS)
                 const response = await fetch(`${API_BASE}?action=orders&adminKey=${encodeURIComponent(key)}`);
-
+                
                 addDebugLog(`رد HTTP: ${response.status} ${response.statusText}`);
-
+                
                 const result = await response.json();
                 addDebugLog(`محتوى الرد: ${JSON.stringify(result)}`);
-
+                
                 if (result.success) {
                     adminKey = key;
                     sessionStorage.setItem('adminKey', adminKey);
@@ -639,32 +640,32 @@
         async function updateStats() {
             try {
                 addDebugLog('جاري تحديث الإحصائيات...');
-
+                
                 // جلب المنتجات
                 const productsResponse = await fetch(`${API_BASE}?action=products`);
                 const productsResult = await productsResponse.json();
-
+                
                 // جلب الطلبات
                 const ordersResponse = await fetch(`${API_BASE}?action=orders&adminKey=${adminKey}`);
                 const ordersResult = await ordersResponse.json();
-
+                
                 if (productsResult.success) {
                     document.getElementById('totalProducts').textContent = productsResult.data.length;
                 }
-
+                
                 if (ordersResult.success) {
                     const orders = ordersResult.data;
                     document.getElementById('totalOrders').textContent = orders.length;
-
+                    
                     const pendingOrders = orders.filter(order => order.status === 'معلق').length;
                     document.getElementById('pendingOrders').textContent = pendingOrders;
-
+                    
                     const totalSales = orders.reduce((sum, order) => sum + (parseFloat(order.total) || 0), 0);
                     document.getElementById('totalSales').textContent = totalSales.toFixed(2) + ' جنيه';
                 }
-
+                
                 addDebugLog('تم تحديث الإحصائيات بنجاح');
-
+                
             } catch (error) {
                 addDebugLog(`خطأ في تحديث الإحصائيات: ${error.message}`);
             }
@@ -675,10 +676,10 @@
             try {
                 addDebugLog('جاري تحميل المنتجات...');
                 showAlert('جاري تحميل المنتجات...', 'info', 'adminAlert');
-
+                
                 const response = await fetch(`${API_BASE}?action=products`);
                 const result = await response.json();
-
+                
                 if (result.success) {
                     displayProducts(result.data);
                     showAlert(`تم تحميل ${result.data.length} منتج بنجاح`, 'success', 'adminAlert');
@@ -695,7 +696,7 @@
         // عرض المنتجات
         function displayProducts(products) {
             const tableContainer = document.getElementById('productsTable');
-
+            
             if (products.length === 0) {
                 tableContainer.innerHTML = '<p style="text-align: center; color: #ffcccc;">لا توجد منتجات حالياً</p>';
                 return;
@@ -743,10 +744,10 @@
         async function loadOrders() {
             try {
                 addDebugLog('جاري تحميل الطلبات...');
-
+                
                 const response = await fetch(`${API_BASE}?action=orders&adminKey=${adminKey}`);
                 const result = await response.json();
-
+                
                 if (result.success) {
                     displayOrders(result.data);
                     addDebugLog(`تم تحميل ${result.data.length} طلب`);
@@ -762,7 +763,7 @@
         // عرض الطلبات
         function displayOrders(orders) {
             const tableContainer = document.getElementById('ordersTable');
-
+            
             if (orders.length === 0) {
                 tableContainer.innerHTML = '<p style="text-align: center; color: #ffcccc;">لا توجد طلبات حالياً</p>';
                 return;
@@ -820,7 +821,7 @@
         // إضافة منتج جديد
         document.getElementById('addProductForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-
+            
             const productData = {
                 action: 'addProduct',
                 adminKey: adminKey,
@@ -834,20 +835,20 @@
                 tags: document.getElementById('productTags').value,
                 featured: document.getElementById('productFeatured').checked
             };
-
+            
             addDebugLog(`إضافة منتج: ${JSON.stringify(productData)}`);
             showAlert('جاري إضافة المنتج...', 'info', 'adminAlert');
-
+            
             try {
                 // محاولة POST أولاً مع FormData
                 const formData = new FormData();
                 for (const [key, value] of Object.entries(productData)) {
                     formData.append(key, value);
                 }
-
+                
                 let response;
                 let method = 'POST';
-
+                
                 try {
                     response = await fetch(API_BASE, {
                         method: 'POST',
@@ -857,20 +858,20 @@
                     // إذا فشل POST، استخدم GET
                     addDebugLog('POST فشل، جاري المحاولة بـ GET...');
                     method = 'GET';
-
+                    
                     const params = new URLSearchParams();
                     for (const [key, value] of Object.entries(productData)) {
                         params.append(key, value);
                     }
-
+                    
                     response = await fetch(`${API_BASE}?${params.toString()}`);
                 }
-
+                
                 addDebugLog(`رد إضافة المنتج (${method}): ${response.status} ${response.statusText}`);
-
+                
                 const result = await response.json();
                 addDebugLog(`نتيجة إضافة المنتج: ${JSON.stringify(result)}`);
-
+                
                 if (result.success) {
                     showAlert('✅ تم إضافة المنتج بنجاح!', 'success', 'adminAlert');
                     document.getElementById('addProductForm').reset();
@@ -890,14 +891,14 @@
             if (!confirm('هل أنت متأكد من حذف هذا المنتج؟')) {
                 return;
             }
-
+            
             addDebugLog(`حذف المنتج: ${productId}`);
             showAlert('جاري حذف المنتج...', 'info', 'adminAlert');
-
+            
             try {
                 const response = await fetch(`${API_BASE}?action=deleteProduct&adminKey=${adminKey}&id=${productId}`);
                 const result = await response.json();
-
+                
                 if (result.success) {
                     showAlert('✅ تم حذف المنتج بنجاح!', 'success', 'adminAlert');
                     await loadProducts();
@@ -914,11 +915,11 @@
         // تحديث حالة الطلب
         async function updateOrderStatus(orderId, newStatus) {
             addDebugLog(`تحديث حالة الطلب: ${orderId} إلى ${newStatus}`);
-
+            
             try {
                 const response = await fetch(`${API_BASE}?action=updateOrderStatus&adminKey=${adminKey}&order_id=${orderId}&status=${newStatus}`);
                 const result = await response.json();
-
+                
                 if (result.success) {
                     showAlert('✅ تم تحديث حالة الطلب!', 'success', 'adminAlert');
                     await updateStats();
@@ -944,18 +945,23 @@
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
-
+            
             // إخفاء جميع أزرار التبويبات
             document.querySelectorAll('.tab').forEach(btn => {
                 btn.classList.remove('active');
             });
-
+            
             // إظهار التبويب المحدد
             document.getElementById(tabName + 'Tab').classList.add('active');
             event.target.classList.add('active');
-
+            
             addDebugLog(`تم التبديل إلى تبويب: ${tabName}`);
         }
     </script>
 </body>
-</html>
+</html>"""
+
+with open('admin-final.html', 'w', encoding='utf-8') as f:
+    f.write(complete_admin_html)
+
+print("✅ تم إنشاء صفحة الأدمن كاملة مع التصميم الأحمر الغامق")
