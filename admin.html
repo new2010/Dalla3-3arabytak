@@ -1,613 +1,855 @@
-<!DOCTYPE html>
+# إنشاء صفحة admin محدثة مع إصلاح مشاكل JavaScript
+updated_admin_html = """<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة الإدارة - دلع عربيتك</title>
     <link rel="stylesheet" href="assets/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        .admin-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .login-form { max-width: 400px; margin: 100px auto; }
-        .dashboard-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .stat-number { font-size: 2em; font-weight: bold; color: #2563eb; }
-        .tabs { display: flex; border-bottom: 1px solid #ddd; margin-bottom: 20px; }
-        .tab { padding: 10px 20px; cursor: pointer; border: none; background: none; }
-        .tab.active { background: #2563eb; color: white; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-        .data-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .data-table th, .data-table td { padding: 12px; border: 1px solid #ddd; text-align: right; }
-        .data-table th { background: #f5f5f5; }
-        .status-pending { color: #f59e0b; }
-        .status-processing { color: #3b82f6; }
-        .status-completed { color: #10b981; }
-        .status-delivered { color: #059669; }
-        .status-cancelled { color: #ef4444; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
-        .admin-actions { display: flex; gap: 10px; }
-        .admin-actions button { padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer; }
-        .btn-edit { background: #f59e0b; color: white; }
-        .btn-delete { background: #ef4444; color: white; }
-        .btn-update { background: #10b981; color: white; }
+        /* أسلوب خاص بصفحة الأدمن */
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .login-form {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .admin-header {
+            background: linear-gradient(135deg, #1a3a52, #2d5f7f);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .admin-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab-button {
+            padding: 10px 20px;
+            background: #f5f5f5;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        .tab-button.active {
+            background: #1a3a52;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        .btn-primary {
+            background: #1a3a52;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+            font-weight: 600;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        .products-table,
+        .orders-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .products-table th,
+        .products-table td,
+        .orders-table th,
+        .orders-table td {
+            padding: 10px;
+            text-align: right;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .products-table th,
+        .orders-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .status-select {
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            font-weight: 500;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+        
+        .alert-error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .debug-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
+
+<!-- نموذج تسجيل الدخول -->
+<div id="loginSection" class="login-form">
+    <h2 style="text-align: center; margin-bottom: 30px;">لوحة إدارة دلع عربيتك</h2>
+    
+    <div id="loginAlert" class="hidden"></div>
+    
+    <form id="loginForm">
+        <div class="form-group">
+            <label for="adminPassword">كلمة مرور الأدمن:</label>
+            <input type="password" id="adminPassword" required>
+        </div>
+        <button type="submit" class="btn-primary" style="width: 100%;">دخول</button>
+    </form>
+    
+    <!-- معلومات تشخيص المشاكل -->
+    <div id="debugInfo" class="debug-info" style="display: none;">
+        <h4>معلومات التشخيص:</h4>
+        <div id="debugLog"></div>
+        <button onclick="toggleDebug()" class="btn-primary" style="margin-top: 10px;">إظهار/إخفاء التشخيص</button>
+    </div>
+    
+    <!-- أزرار اختبار API -->
+    <div style="margin-top: 20px; text-align: center;">
+        <button onclick="testAPI()" class="btn-primary">اختبار الاتصال</button>
+        <button onclick="showDebug()" class="btn-primary">إظهار التشخيص</button>
+    </div>
+</div>
+
+<!-- لوحة الإدارة الرئيسية -->
+<div id="adminPanel" class="hidden">
     <div class="admin-container">
-        <!-- Login Form -->
-        <div id="loginSection" class="login-form">
-            <h2 style="text-align: center;">تسجيل دخول المشرف</h2>
-            <form id="adminLoginForm">
-                <div class="form-group">
-                    <label for="adminPassword">كلمة المرور الإدارية:</label>
-                    <input type="password" id="adminPassword" required>
-                </div>
-                <button type="submit" class="btn btn-primary btn-large">دخول</button>
-            </form>
+        
+        <!-- ترويسة الإدارة -->
+        <div class="admin-header">
+            <h1>لوحة إدارة دلع عربيتك</h1>
+            <p>إدارة المنتجات والطلبات</p>
+            <button onclick="logout()" style="float: left; background: rgba(255,255,255,0.2); border: none; color: white; padding: 8px 16px; border-radius: 5px; cursor: pointer;">تسجيل خروج</button>
         </div>
 
-        <!-- Admin Panel -->
-        <div id="adminPanel" style="display: none;">
-            <header class="admin-header" style="margin-bottom: 30px;">
-                <h1>🚗 لوحة إدارة دلع عربيتك</h1>
-                <button onclick="logout()" class="btn btn-danger" style="float: left;">تسجيل خروج</button>
-                <div style="clear: both;"></div>
-            </header>
+        <!-- رسائل التنبيه -->
+        <div id="adminAlert" class="hidden"></div>
 
-            <!-- Dashboard Stats -->
-            <div class="dashboard-stats">
-                <div class="stat-card">
-                    <h3>إجمالي الطلبات</h3>
-                    <div class="stat-number" id="totalOrders">0</div>
-                </div>
-                <div class="stat-card">
-                    <h3>مبيعات اليوم</h3>
-                    <div class="stat-number" id="todaySales">0 جنيه</div>
-                </div>
-                <div class="stat-card">
-                    <h3>مبيعات الشهر</h3>
-                    <div class="stat-number" id="monthlySales">0 جنيه</div>
-                </div>
-                <div class="stat-card">
-                    <h3>المنتجات النشطة</h3>
-                    <div class="stat-number" id="activeProducts">0</div>
-                </div>
+        <!-- الإحصائيات -->
+        <div id="statsSection" class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalProducts">-</div>
+                <div>إجمالي المنتجات</div>
             </div>
-
-            <!-- Tabs -->
-            <div class="tabs">
-                <button class="tab active" onclick="showTab('products')">إدارة المنتجات</button>
-                <button class="tab" onclick="showTab('orders')">إدارة الطلبات</button>
-                <button class="tab" onclick="showTab('analytics')">التحليلات</button>
+            <div class="stat-card">
+                <div class="stat-number" id="totalOrders">-</div>
+                <div>إجمالي الطلبات</div>
             </div>
-
-            <!-- Products Tab -->
-            <div id="productsTab" class="tab-content active">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3>إدارة المنتجات</h3>
-                    <button class="btn btn-primary" onclick="showAddProductForm()">إضافة منتج جديد</button>
-                </div>
-
-                <!-- Add/Edit Product Form -->
-                <div id="productForm" class="form-container" style="display: none;">
-                    <h4 id="formTitle">إضافة منتج جديد</h4>
-                    <form id="productFormElement">
-                        <input type="hidden" id="productId">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="productName">اسم المنتج *</label>
-                                <input type="text" id="productName" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="productCategory">الفئة *</label>
-                                <select id="productCategory" required>
-                                    <option value="">اختر الفئة</option>
-                                    <option value="إكسسوارات داخلية">إكسسوارات داخلية</option>
-                                    <option value="إكسسوارات خارجية">إكسسوارات خارجية</option>
-                                    <option value="إضاءة">إضاءة</option>
-                                    <option value="تنظيف وعناية">تنظيف وعناية</option>
-                                    <option value="قطع غيار">قطع غيار</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="productPrice">السعر (جنيه) *</label>
-                                <input type="number" id="productPrice" required min="0" step="0.01">
-                            </div>
-                            <div class="form-group">
-                                <label for="productStock">الكمية المتاحة *</label>
-                                <input type="number" id="productStock" required min="0">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="productImageDesc">وصف الصورة *</label>
-                            <input type="text" id="productImageDesc" required 
-                                   placeholder="مثال: صورة طقم دواسات جلد أسود مع خياطة حمراء">
-                        </div>
-                        <div class="form-group">
-                            <label for="productShortDesc">الوصف المختصر</label>
-                            <input type="text" id="productShortDesc">
-                        </div>
-                        <div class="form-group">
-                            <label for="productLongDesc">الوصف التفصيلي</label>
-                            <textarea id="productLongDesc" rows="4"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="productTags">الكلمات المفتاحية</label>
-                            <input type="text" id="productTags" placeholder="مفصولة بفاصلة">
-                        </div>
-                        <div class="form-group">
-                            <label>
-                                <input type="checkbox" id="productFeatured"> منتج مميز
-                            </label>
-                        </div>
-                        <div class="form-actions">
-                            <button type="submit" class="btn btn-primary" id="saveProductBtn">حفظ</button>
-                            <button type="button" class="btn btn-secondary" onclick="hideProductForm()">إلغاء</button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Products List -->
-                <div id="productsTable"></div>
+            <div class="stat-card">
+                <div class="stat-number" id="pendingOrders">-</div>
+                <div>طلبات معلقة</div>
             </div>
-
-            <!-- Orders Tab -->
-            <div id="ordersTab" class="tab-content">
-                <h3>إدارة الطلبات</h3>
-                <div id="ordersTable"></div>
+            <div class="stat-card">
+                <div class="stat-number" id="todayRevenue">-</div>
+                <div>مبيعات اليوم</div>
             </div>
+        </div>
 
-            <!-- Analytics Tab -->
-            <div id="analyticsTab" class="tab-content">
-                <h3>تحليلات المبيعات</h3>
-                <div id="analyticsContent">
-                    <div class="dashboard-stats">
-                        <div class="stat-card">
-                            <h4>أكثر المنتجات مبيعاً</h4>
-                            <div id="topProducts"></div>
+        <!-- تبويبات الإدارة -->
+        <div class="admin-tabs">
+            <button class="tab-button active" onclick="showTab('products')">المنتجات</button>
+            <button class="tab-button" onclick="showTab('orders')">الطلبات</button>
+            <button class="tab-button" onclick="showTab('settings')">الإعدادات</button>
+        </div>
+
+        <!-- تبويب المنتجات -->
+        <div id="productsTab" class="tab-content active">
+            <div class="admin-section">
+                <h3>إضافة منتج جديد</h3>
+                <form id="addProductForm">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="form-group">
+                            <label for="productName">اسم المنتج:</label>
+                            <input type="text" id="productName" required>
                         </div>
-                        <div class="stat-card">
-                            <h4>الطلبات حسب الحالة</h4>
-                            <div id="ordersByStatus"></div>
+                        <div class="form-group">
+                            <label for="productPrice">السعر (جنيه):</label>
+                            <input type="number" id="productPrice" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="productStock">الكمية المتوفرة:</label>
+                            <input type="number" id="productStock" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="productCategory">الفئة:</label>
+                            <select id="productCategory">
+                                <option value="اكسسوارات داخلية">اكسسوارات داخلية</option>
+                                <option value="اكسسوارات خارجية">اكسسوارات خارجية</option>
+                                <option value="إضاءة">إضاءة</option>
+                                <option value="عجلات ودواسات">عجلات ودواسات</option>
+                                <option value="صوتيات">صوتيات</option>
+                                <option value="حماية">حماية</option>
+                                <option value="أخرى">أخرى</option>
+                            </select>
                         </div>
                     </div>
+                    
+                    <div class="form-group">
+                        <label for="productImageDesc">وصف الصورة:</label>
+                        <textarea id="productImageDesc" rows="2" placeholder="مثال: صورة طقم دواسات من الجلد الأسود مع خياطة حمراء"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productShortDesc">الوصف المختصر:</label>
+                        <textarea id="productShortDesc" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productLongDesc">الوصف المفصل:</label>
+                        <textarea id="productLongDesc" rows="4"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="productTags">الكلمات المفتاحية (افصل بفواصل):</label>
+                        <input type="text" id="productTags" placeholder="مثال: دواسات,جلد,فاخر">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="productFeatured"> منتج مميز
+                        </label>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">إضافة المنتج</button>
+                </form>
+            </div>
+
+            <div class="admin-section">
+                <h3>قائمة المنتجات</h3>
+                <div id="productsLoading" class="loading">جاري تحميل المنتجات...</div>
+                <div id="productsContainer"></div>
+            </div>
+        </div>
+
+        <!-- تبويب الطلبات -->
+        <div id="ordersTab" class="tab-content">
+            <div class="admin-section">
+                <h3>إدارة الطلبات</h3>
+                <div id="ordersLoading" class="loading">جاري تحميل الطلبات...</div>
+                <div id="ordersContainer"></div>
+            </div>
+        </div>
+
+        <!-- تبويب الإعدادات -->
+        <div id="settingsTab" class="tab-content">
+            <div class="admin-section">
+                <h3>إعدادات النظام</h3>
+                <p>رابط API الحالي: <code id="currentApiUrl">-</code></p>
+                <p>آخر تحديث للبيانات: <span id="lastUpdate">-</span></p>
+                
+                <div style="margin-top: 30px;">
+                    <h4>اختبارات النظام:</h4>
+                    <button onclick="testAPI()" class="btn-primary">اختبار الاتصال بالـ API</button>
+                    <button onclick="refreshData()" class="btn-primary">إعادة تحميل البيانات</button>
                 </div>
             </div>
         </div>
+
     </div>
+</div>
 
-    <!-- Notification Toast -->
-    <div id="toast" class="toast"></div>
+<!-- تحميل الإعدادات والسكريبت -->
+<script src="config.js"></script>
+<script>
+let adminKey = '';
+let debugMode = false;
 
-    <script src="config.js"></script>
-    <script src="assets/app.js"></script>
-    <script>
-        let adminKey = '';
-        let isLoggedIn = false;
-        let currentProducts = [];
-        let currentOrders = [];
+// تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    addDebugLog('تم تحميل صفحة الأدمن');
+    document.getElementById('currentApiUrl').textContent = API_BASE;
+    
+    // التحقق من جلسة سابقة
+    const savedKey = sessionStorage.getItem('adminKey');
+    if (savedKey) {
+        addDebugLog('تم العثور على جلسة محفوظة');
+        verifyAdminKey(savedKey);
+    }
+});
 
-        // Initialize admin panel
-        document.addEventListener('DOMContentLoaded', function() {
-            checkSession();
-            initializeLoginForm();
-        });
+// دالة تسجيل رسائل التشخيص
+function addDebugLog(message) {
+    if (debugMode) {
+        const timestamp = new Date().toLocaleTimeString('ar-EG');
+        const debugLog = document.getElementById('debugLog');
+        debugLog.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+        debugLog.scrollTop = debugLog.scrollHeight;
+    }
+    console.log('[DEBUG] ' + message);
+}
 
-        // Check existing session
-        function checkSession() {
-            const savedAdminKey = sessionStorage.getItem('adminKey');
-            if (savedAdminKey) {
-                adminKey = savedAdminKey;
-                verifySession();
-            }
-        }
+// إظهار/إخفاء التشخيص
+function showDebug() {
+    document.getElementById('debugInfo').style.display = 'block';
+    debugMode = true;
+    addDebugLog('تم تفعيل وضع التشخيص');
+}
 
-        // Verify session with server
-        async function verifySession() {
-            try {
-                const response = await fetch(`${API_BASE}?action=orders&adminKey=${adminKey}`);
-                if (response.ok) {
-                    isLoggedIn = true;
-                    showAdminPanel();
-                    loadDashboard();
-                } else {
-                    sessionStorage.removeItem('adminKey');
-                }
-            } catch (error) {
-                sessionStorage.removeItem('adminKey');
-            }
-        }
+function toggleDebug() {
+    const debugInfo = document.getElementById('debugInfo');
+    debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
+}
 
-        // Initialize login form
-        function initializeLoginForm() {
-            document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                const password = document.getElementById('adminPassword').value;
-                await attemptLogin(password);
-            });
-        }
-
-        // Attempt admin login
-        async function attemptLogin(password) {
-            try {
-                // Test admin key by fetching orders
-                const response = await fetch(`${API_BASE}?action=orders&adminKey=${password}`);
-                
-                if (response.ok) {
-                    adminKey = password;
-                    isLoggedIn = true;
-                    sessionStorage.setItem('adminKey', adminKey);
-                    showAdminPanel();
-                    loadDashboard();
-                    showToast('تم تسجيل الدخول بنجاح', 'success');
-                } else {
-                    showToast('كلمة المرور غير صحيحة', 'error');
-                }
-            } catch (error) {
-                console.error('Login error:', error);
-                showToast('خطأ في الاتصال بالخادم', 'error');
-            }
-        }
-
-        // Show admin panel
-        function showAdminPanel() {
-            document.getElementById('loginSection').style.display = 'none';
-            document.getElementById('adminPanel').style.display = 'block';
-        }
-
-        // Logout
-        function logout() {
-            adminKey = '';
-            isLoggedIn = false;
-            sessionStorage.removeItem('adminKey');
-            document.getElementById('loginSection').style.display = 'block';
-            document.getElementById('adminPanel').style.display = 'none';
-            document.getElementById('adminPassword').value = '';
-        }
-
-        // Load dashboard data
-        async function loadDashboard() {
-            try {
-                await Promise.all([
-                    loadProducts(),
-                    loadOrders(),
-                    updateDashboardStats()
-                ]);
-            } catch (error) {
-                console.error('Error loading dashboard:', error);
-                showToast('خطأ في تحميل البيانات', 'error');
-            }
-        }
-
-        // Load products
-        async function loadProducts() {
-            try {
-                const response = await fetch(`${API_BASE}?action=products`);
-                currentProducts = await response.json();
-                displayProductsTable();
-            } catch (error) {
-                console.error('Error loading products:', error);
-            }
-        }
-
-        // Load orders
-        async function loadOrders() {
-            try {
-                const response = await fetch(`${API_BASE}?action=orders&adminKey=${adminKey}`);
-                currentOrders = await response.json();
-                displayOrdersTable();
-            } catch (error) {
-                console.error('Error loading orders:', error);
-            }
-        }
-
-        // Update dashboard statistics
-        function updateDashboardStats() {
-            document.getElementById('totalOrders').textContent = currentOrders.length;
-            document.getElementById('activeProducts').textContent = currentProducts.length;
-
-            // Calculate today's sales
-            const today = new Date().toISOString().split('T')[0];
-            const todayOrders = currentOrders.filter(order => 
-                order.created_at && order.created_at.startsWith(today)
-            );
-            const todaySales = todayOrders.reduce((sum, order) => sum + (order.total || 0), 0);
-            document.getElementById('todaySales').textContent = `${todaySales} جنيه`;
-
-            // Calculate monthly sales
-            const currentMonth = new Date().toISOString().substring(0, 7); // YYYY-MM
-            const monthlyOrders = currentOrders.filter(order => 
-                order.created_at && order.created_at.startsWith(currentMonth)
-            );
-            const monthlySales = monthlyOrders.reduce((sum, order) => sum + (order.total || 0), 0);
-            document.getElementById('monthlySales').textContent = `${monthlySales} جنيه`;
-        }
-
-        // Display products table
-        function displayProductsTable() {
-            const container = document.getElementById('productsTable');
-            
-            if (!currentProducts || currentProducts.length === 0) {
-                container.innerHTML = '<p>لا توجد منتجات</p>';
-                return;
-            }
-
-            container.innerHTML = `
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>الاسم</th>
-                            <th>الفئة</th>
-                            <th>السعر</th>
-                            <th>المخزون</th>
-                            <th>مميز</th>
-                            <th>الإجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${currentProducts.map(product => `
-                            <tr>
-                                <td>${product.name}</td>
-                                <td>${product.category || '-'}</td>
-                                <td>${product.price} جنيه</td>
-                                <td>${product.stock || 0}</td>
-                                <td>${product.featured ? 'نعم' : 'لا'}</td>
-                                <td class="admin-actions">
-                                    <button class="btn-edit" onclick="editProduct('${product.id}')">تعديل</button>
-                                    <button class="btn-delete" onclick="deleteProduct('${product.id}')">حذف</button>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-        }
-
-        // Display orders table
-        function displayOrdersTable() {
-            const container = document.getElementById('ordersTable');
-            
-            if (!currentOrders || currentOrders.length === 0) {
-                container.innerHTML = '<p>لا توجد طلبات</p>';
-                return;
-            }
-
-            container.innerHTML = `
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>رقم الطلب</th>
-                            <th>اسم العميل</th>
-                            <th>الهاتف</th>
-                            <th>المجموع</th>
-                            <th>الحالة</th>
-                            <th>التاريخ</th>
-                            <th>الإجراءات</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${currentOrders.map(order => `
-                            <tr>
-                                <td>${order.order_id}</td>
-                                <td>${order.customer_name}</td>
-                                <td>${order.phone}</td>
-                                <td>${order.total} جنيه</td>
-                                <td class="status-${getStatusClass(order.status)}">
-                                    ${order.status || 'معلق'}
-                                </td>
-                                <td>${formatDate(order.created_at)}</td>
-                                <td class="admin-actions">
-                                    <select onchange="updateOrderStatus('${order.order_id}', this.value)">
-                                        <option value="معلق" ${order.status === 'معلق' ? 'selected' : ''}>معلق</option>
-                                        <option value="قيد التنفيذ" ${order.status === 'قيد التنفيذ' ? 'selected' : ''}>قيد التنفيذ</option>
-                                        <option value="تم التنفيذ" ${order.status === 'تم التنفيذ' ? 'selected' : ''}>تم التنفيذ</option>
-                                        <option value="تم التسليم" ${order.status === 'تم التسليم' ? 'selected' : ''}>تم التسليم</option>
-                                        <option value="ملغى" ${order.status === 'ملغى' ? 'selected' : ''}>ملغى</option>
-                                    </select>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
-        }
-
-        // Show tab
-        function showTab(tabName) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            
-            // Show selected tab
-            document.getElementById(tabName + 'Tab').classList.add('active');
-            event.target.classList.add('active');
-
-            // Load specific data if needed
-            if (tabName === 'analytics') {
-                loadAnalytics();
-            }
-        }
-
-        // Show add product form
-        function showAddProductForm() {
-            document.getElementById('formTitle').textContent = 'إضافة منتج جديد';
-            document.getElementById('productFormElement').reset();
-            document.getElementById('productId').value = '';
-            document.getElementById('productForm').style.display = 'block';
-        }
-
-        // Hide product form
-        function hideProductForm() {
-            document.getElementById('productForm').style.display = 'none';
-        }
-
-        // Edit product
-        function editProduct(productId) {
-            const product = currentProducts.find(p => p.id === productId);
-            if (!product) return;
-
-            document.getElementById('formTitle').textContent = 'تعديل المنتج';
-            document.getElementById('productId').value = product.id;
-            document.getElementById('productName').value = product.name || '';
-            document.getElementById('productCategory').value = product.category || '';
-            document.getElementById('productPrice').value = product.price || '';
-            document.getElementById('productStock').value = product.stock || '';
-            document.getElementById('productImageDesc').value = product.image_desc || '';
-            document.getElementById('productShortDesc').value = product.short_desc || '';
-            document.getElementById('productLongDesc').value = product.long_desc || '';
-            document.getElementById('productTags').value = product.tags || '';
-            document.getElementById('productFeatured').checked = product.featured || false;
-            
-            document.getElementById('productForm').style.display = 'block';
-        }
-
-        // Delete product
-        async function deleteProduct(productId) {
-            if (!confirm('هل أنت متأكد من حذف هذا المنتج؟')) return;
-
-            try {
-                const response = await fetch(`${API_BASE}?action=deleteProduct`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ adminKey, id: productId })
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    showToast('تم حذف المنتج بنجاح', 'success');
-                    loadProducts();
-                } else {
-                    showToast(result.error || 'فشل في حذف المنتج', 'error');
-                }
-            } catch (error) {
-                console.error('Error deleting product:', error);
-                showToast('خطأ في حذف المنتج', 'error');
-            }
-        }
-
-        // Update order status
-        async function updateOrderStatus(orderId, newStatus) {
-            try {
-                const response = await fetch(`${API_BASE}?action=updateOrderStatus`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ adminKey, order_id: orderId, status: newStatus })
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    showToast('تم تحديث حالة الطلب', 'success');
-                    loadOrders();
-                } else {
-                    showToast(result.error || 'فشل في تحديث الحالة', 'error');
-                }
-            } catch (error) {
-                console.error('Error updating order status:', error);
-                showToast('خطأ في تحديث الحالة', 'error');
-            }
-        }
-
-        // Handle product form submission
-        document.getElementById('productFormElement').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const productId = document.getElementById('productId').value;
-            const isEdit = !!productId;
-            
-            const productData = {
-                adminKey,
-                name: document.getElementById('productName').value,
-                category: document.getElementById('productCategory').value,
-                price: parseFloat(document.getElementById('productPrice').value),
-                stock: parseInt(document.getElementById('productStock').value),
-                image_desc: document.getElementById('productImageDesc').value,
-                short_desc: document.getElementById('productShortDesc').value,
-                long_desc: document.getElementById('productLongDesc').value,
-                tags: document.getElementById('productTags').value,
-                featured: document.getElementById('productFeatured').checked
-            };
-
-            if (isEdit) {
-                productData.id = productId;
-            }
-
-            try {
-                const action = isEdit ? 'updateProduct' : 'addProduct';
-                const response = await fetch(`${API_BASE}?action=${action}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(productData)
-                });
-
-                const result = await response.json();
-                if (result.success) {
-                    showToast(isEdit ? 'تم تحديث المنتج بنجاح' : 'تم إضافة المنتج بنجاح', 'success');
-                    hideProductForm();
-                    loadProducts();
-                } else {
-                    showToast(result.error || 'فشل في حفظ المنتج', 'error');
-                }
-            } catch (error) {
-                console.error('Error saving product:', error);
-                showToast('خطأ في حفظ المنتج', 'error');
+// اختبار الاتصال بالـ API
+async function testAPI() {
+    addDebugLog('بدء اختبار API...');
+    showAlert('جاري اختبار الاتصال...', 'info', 'loginAlert');
+    
+    try {
+        const response = await fetch(API_BASE + '?action=test', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
             }
         });
-
-        // Helper functions
-        function getStatusClass(status) {
-            const statusMap = {
-                'معلق': 'pending',
-                'قيد التنفيذ': 'processing', 
-                'تم التنفيذ': 'completed',
-                'تم التسليم': 'delivered',
-                'ملغى': 'cancelled'
-            };
-            return statusMap[status] || 'pending';
+        
+        addDebugLog(`رد HTTP: ${response.status} ${response.statusText}`);
+        
+        const result = await response.json();
+        addDebugLog(`محتوى الرد: ${JSON.stringify(result)}`);
+        
+        if (result.success) {
+            showAlert('✅ الاتصال يعمل بنجاح!', 'success', 'loginAlert');
+        } else {
+            showAlert('❌ خطأ: ' + result.message, 'error', 'loginAlert');
         }
+    } catch (error) {
+        addDebugLog(`خطأ في الشبكة: ${error.message}`);
+        showAlert('❌ خطأ في الاتصال: ' + error.message, 'error', 'loginAlert');
+    }
+}
 
-        function formatDate(dateString) {
-            if (!dateString) return '';
-            return new Date(dateString).toLocaleDateString('ar-EG');
+// تسجيل الدخول
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const password = document.getElementById('adminPassword').value;
+    addDebugLog(`محاولة تسجيل دخول بكلمة المرور: ${password.substring(0, 3)}...`);
+    
+    await verifyAdminKey(password);
+});
+
+// التحقق من كلمة مرور الأدمن
+async function verifyAdminKey(key) {
+    showAlert('جاري التحقق من كلمة المرور...', 'info', 'loginAlert');
+    addDebugLog('بدء التحقق من adminKey...');
+    
+    try {
+        const requestData = {
+            action: 'testAdmin',
+            adminKey: key
+        };
+        
+        addDebugLog(`إرسال طلب POST: ${JSON.stringify(requestData)}`);
+        
+        const response = await fetch(API_BASE, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestData)
+        });
+        
+        addDebugLog(`رد HTTP: ${response.status} ${response.statusText}`);
+        
+        const result = await response.json();
+        addDebugLog(`محتوى الرد: ${JSON.stringify(result)}`);
+        
+        if (result.success) {
+            adminKey = key;
+            sessionStorage.setItem('adminKey', adminKey);
+            showAdminPanel();
+            showAlert('تم تسجيل الدخول بنجاح!', 'success', 'adminAlert');
+            loadInitialData();
+        } else {
+            showAlert('كلمة المرور غير صحيحة', 'error', 'loginAlert');
         }
+    } catch (error) {
+        addDebugLog(`خطأ في التحقق: ${error.message}`);
+        showAlert('خطأ في الاتصال: ' + error.message, 'error', 'loginAlert');
+    }
+}
 
-        function loadAnalytics() {
-            // Simple analytics implementation
-            const topProducts = {};
-            currentOrders.forEach(order => {
-                if (order.items_json) {
-                    try {
-                        const items = JSON.parse(order.items_json);
-                        items.forEach(item => {
-                            topProducts[item.name] = (topProducts[item.name] || 0) + item.qty;
-                        });
-                    } catch (e) {}
-                }
-            });
+// إظهار لوحة الإدارة
+function showAdminPanel() {
+    document.getElementById('loginSection').classList.add('hidden');
+    document.getElementById('adminPanel').classList.remove('hidden');
+    addDebugLog('تم عرض لوحة الإدارة');
+}
 
-            const topProductsList = Object.entries(topProducts)
-                .sort(([,a], [,b]) => b - a)
-                .slice(0, 5)
-                .map(([name, qty]) => `<p>${name}: ${qty} قطعة</p>`)
-                .join('');
+// تسجيل الخروج
+function logout() {
+    adminKey = '';
+    sessionStorage.removeItem('adminKey');
+    document.getElementById('loginSection').classList.remove('hidden');
+    document.getElementById('adminPanel').classList.add('hidden');
+    document.getElementById('adminPassword').value = '';
+    addDebugLog('تم تسجيل الخروج');
+}
+
+// تحميل البيانات الأولية
+async function loadInitialData() {
+    await Promise.all([
+        loadProducts(),
+        loadOrders(),
+        updateStats()
+    ]);
+}
+
+// إضافة منتج جديد
+document.getElementById('addProductForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const productData = {
+        action: 'addProduct',
+        adminKey: adminKey,
+        name: document.getElementById('productName').value,
+        price: parseFloat(document.getElementById('productPrice').value),
+        stock: parseInt(document.getElementById('productStock').value),
+        category: document.getElementById('productCategory').value,
+        image_desc: document.getElementById('productImageDesc').value,
+        short_desc: document.getElementById('productShortDesc').value,
+        long_desc: document.getElementById('productLongDesc').value,
+        tags: document.getElementById('productTags').value,
+        featured: document.getElementById('productFeatured').checked
+    };
+    
+    addDebugLog(`إضافة منتج: ${JSON.stringify(productData)}`);
+    showAlert('جاري إضافة المنتج...', 'info', 'adminAlert');
+    
+    try {
+        const response = await fetch(API_BASE, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(productData)
+        });
+        
+        addDebugLog(`رد إضافة المنتج: ${response.status} ${response.statusText}`);
+        
+        const result = await response.json();
+        addDebugLog(`نتيجة إضافة المنتج: ${JSON.stringify(result)}`);
+        
+        if (result.success) {
+            showAlert('✅ تم إضافة المنتج بنجاح!', 'success', 'adminAlert');
+            document.getElementById('addProductForm').reset();
+            await loadProducts();
+            await updateStats();
+        } else {
+            showAlert('❌ خطأ في إضافة المنتج: ' + result.message, 'error', 'adminAlert');
+        }
+    } catch (error) {
+        addDebugLog(`خطأ في إضافة المنتج: ${error.message}`);
+        showAlert('❌ خطأ في الاتصال: ' + error.message, 'error', 'adminAlert');
+    }
+});
+
+// تحميل قائمة المنتجات
+async function loadProducts() {
+    addDebugLog('بدء تحميل المنتجات...');
+    
+    try {
+        const response = await fetch(API_BASE + '?action=products');
+        const result = await response.json();
+        
+        if (result.success) {
+            displayProducts(result.data);
+            addDebugLog(`تم تحميل ${result.data.length} منتج`);
+        } else {
+            showAlert('خطأ في تحميل المنتجات: ' + result.message, 'error', 'adminAlert');
+        }
+    } catch (error) {
+        addDebugLog(`خطأ في تحميل المنتجات: ${error.message}`);
+        showAlert('خطأ في تحميل المنتجات: ' + error.message, 'error', 'adminAlert');
+    }
+    
+    document.getElementById('productsLoading').style.display = 'none';
+}
+
+// عرض قائمة المنتجات
+function displayProducts(products) {
+    const container = document.getElementById('productsContainer');
+    
+    if (products.length === 0) {
+        container.innerHTML = '<p>لا توجد منتجات حالياً</p>';
+        return;
+    }
+    
+    let html = '<table class="products-table"><thead><tr>';
+    html += '<th>الاسم</th><th>السعر</th><th>المخزون</th><th>الفئة</th><th>إجراءات</th>';
+    html += '</tr></thead><tbody>';
+    
+    products.forEach(product => {
+        html += `
+            <tr>
+                <td>${product.name}</td>
+                <td>${formatPrice(product.price)}</td>
+                <td>${product.stock}</td>
+                <td>${product.category}</td>
+                <td>
+                    <button onclick="editProduct('${product.id}')" class="btn-primary">تعديل</button>
+                    <button onclick="deleteProduct('${product.id}')" class="btn-danger">حذف</button>
+                </td>
+            </tr>
+        `;
+    });
+    
+    html += '</tbody></table>';
+    container.innerHTML = html;
+}
+
+// حذف منتج
+async function deleteProduct(id) {
+    if (!confirm('هل أنت متأكد من حذف هذا المنتج؟')) return;
+    
+    const deleteData = {
+        action: 'deleteProduct',
+        adminKey: adminKey,
+        id: id
+    };
+    
+    addDebugLog(`حذف منتج: ${id}`);
+    
+    try {
+        const response = await fetch(API_BASE, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(deleteData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showAlert('تم حذف المنتج بنجاح', 'success', 'adminAlert');
+            await loadProducts();
+            await updateStats();
+        } else {
+            showAlert('خطأ في حذف المنتج: ' + result.message, 'error', 'adminAlert');
+        }
+    } catch (error) {
+        addDebugLog(`خطأ في حذف المنتج: ${error.message}`);
+        showAlert('خطأ في حذف المنتج: ' + error.message, 'error', 'adminAlert');
+    }
+}
+
+// تحميل قائمة الطلبات
+async function loadOrders() {
+    addDebugLog('بدء تحميل الطلبات...');
+    
+    try {
+        const response = await fetch(API_BASE + `?action=orders&adminKey=${adminKey}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            displayOrders(result.data);
+            addDebugLog(`تم تحميل ${result.data.length} طلب`);
+        } else {
+            showAlert('خطأ في تحميل الطلبات: ' + result.message, 'error', 'adminAlert');
+        }
+    } catch (error) {
+        addDebugLog(`خطأ في تحميل الطلبات: ${error.message}`);
+        showAlert('خطأ في تحميل الطلبات: ' + error.message, 'error', 'adminAlert');
+    }
+    
+    document.getElementById('ordersLoading').style.display = 'none';
+}
+
+// عرض قائمة الطلبات
+function displayOrders(orders) {
+    const container = document.getElementById('ordersContainer');
+    
+    if (orders.length === 0) {
+        container.innerHTML = '<p>لا توجد طلبات حالياً</p>';
+        return;
+    }
+    
+    let html = '<table class="orders-table"><thead><tr>';
+    html += '<th>رقم الطلب</th><th>العميل</th><th>التليفون</th><th>المجموع</th><th>الحالة</th><th>التاريخ</th><th>إجراءات</th>';
+    html += '</tr></thead><tbody>';
+    
+    orders.forEach(order => {
+        const date = new Date(order.created_at).toLocaleDateString('ar-EG');
+        html += `
+            <tr>
+                <td>${order.order_id}</td>
+                <td>${order.customer_name}</td>
+                <td>${order.phone}</td>
+                <td>${formatPrice(order.total)}</td>
+                <td>
+                    <select class="status-select" onchange="updateOrderStatus('${order.order_id}', this.value)">
+                        <option value="معلق" ${order.status === 'معلق' ? 'selected' : ''}>معلق</option>
+                        <option value="قيد التنفيذ" ${order.status === 'قيد التنفيذ' ? 'selected' : ''}>قيد التنفيذ</option>
+                        <option value="تم التنفيذ" ${order.status === 'تم التنفيذ' ? 'selected' : ''}>تم التنفيذ</option>
+                        <option value="تم التسليم" ${order.status === 'تم التسليم' ? 'selected' : ''}>تم التسليم</option>
+                        <option value="ملغى" ${order.status === 'ملغى' ? 'selected' : ''}>ملغى</option>
+                    </select>
+                </td>
+                <td>${date}</td>
+                <td>
+                    <button onclick="viewOrderDetails('${order.order_id}')" class="btn-primary">التفاصيل</button>
+                </td>
+            </tr>
+        `;
+    });
+    
+    html += '</tbody></table>';
+    container.innerHTML = html;
+}
+
+// تحديث حالة الطلب
+async function updateOrderStatus(orderId, newStatus) {
+    const statusData = {
+        action: 'updateOrderStatus',
+        adminKey: adminKey,
+        order_id: orderId,
+        status: newStatus
+    };
+    
+    addDebugLog(`تحديث حالة الطلب ${orderId} إلى ${newStatus}`);
+    
+    try {
+        const response = await fetch(API_BASE, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(statusData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showAlert('تم تحديث حالة الطلب بنجاح', 'success', 'adminAlert');
+            await updateStats();
+        } else {
+            showAlert('خطأ في تحديث حالة الطلب: ' + result.message, 'error', 'adminAlert');
+            await loadOrders(); // إعادة تحميل لاسترجاع الحالة الصحيحة
+        }
+    } catch (error) {
+        addDebugLog(`خطأ في تحديث حالة الطلب: ${error.message}`);
+        showAlert('خطأ في تحديث حالة الطلب: ' + error.message, 'error', 'adminAlert');
+        await loadOrders();
+    }
+}
+
+// تحديث الإحصائيات
+async function updateStats() {
+    try {
+        // جلب المنتجات والطلبات للإحصائيات
+        const [productsRes, ordersRes] = await Promise.all([
+            fetch(API_BASE + '?action=products'),
+            fetch(API_BASE + `?action=orders&adminKey=${adminKey}`)
+        ]);
+        
+        const productsData = await productsRes.json();
+        const ordersData = await ordersRes.json();
+        
+        if (productsData.success) {
+            document.getElementById('totalProducts').textContent = productsData.data.length;
+        }
+        
+        if (ordersData.success) {
+            const orders = ordersData.data;
+            document.getElementById('totalOrders').textContent = orders.length;
             
-            document.getElementById('topProducts').innerHTML = topProductsList || 'لا توجد بيانات';
-
-            const ordersByStatus = {};
-            currentOrders.forEach(order => {
-                const status = order.status || 'معلق';
-                ordersByStatus[status] = (ordersByStatus[status] || 0) + 1;
-            });
-
-            const statusList = Object.entries(ordersByStatus)
-                .map(([status, count]) => `<p>${status}: ${count} طلب</p>`)
-                .join('');
+            const pendingOrders = orders.filter(order => order.status === 'معلق').length;
+            document.getElementById('pendingOrders').textContent = pendingOrders;
             
-            document.getElementById('ordersByStatus').innerHTML = statusList || 'لا توجد بيانات';
+            // حساب مبيعات اليوم
+            const today = new Date().toDateString();
+            const todayOrders = orders.filter(order => 
+                new Date(order.created_at).toDateString() === today
+            );
+            const todayRevenue = todayOrders.reduce((sum, order) => sum + parseFloat(order.total || 0), 0);
+            document.getElementById('todayRevenue').textContent = formatPrice(todayRevenue);
         }
-    </script>
+        
+        document.getElementById('lastUpdate').textContent = new Date().toLocaleString('ar-EG');
+    } catch (error) {
+        addDebugLog(`خطأ في تحديث الإحصائيات: ${error.message}`);
+    }
+}
+
+// عرض تفاصيل الطلب
+function viewOrderDetails(orderId) {
+    alert('عرض تفاصيل الطلب: ' + orderId);
+    // يمكن إضافة modal هنا لعرض تفاصيل أكثر
+}
+
+// تبديل التبويبات
+function showTab(tabName) {
+    // إخفاء جميع التبويبات
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // إزالة التفعيل من جميع الأزرار
+    document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // إظهار التبويب المطلوب
+    document.getElementById(tabName + 'Tab').classList.add('active');
+    event.target.classList.add('active');
+    
+    // تحميل البيانات حسب التبويب
+    if (tabName === 'orders' && adminKey) {
+        loadOrders();
+    }
+}
+
+// إعادة تحميل البيانات
+async function refreshData() {
+    showAlert('جاري إعادة تحميل البيانات...', 'info', 'adminAlert');
+    await loadInitialData();
+    showAlert('تم تحديث البيانات بنجاح!', 'success', 'adminAlert');
+}
+
+// عرض رسائل التنبيه
+function showAlert(message, type, alertId = 'adminAlert') {
+    const alertDiv = document.getElementById(alertId);
+    alertDiv.className = `alert alert-${type === 'success' ? 'success' : 'error'}`;
+    alertDiv.textContent = message;
+    alertDiv.classList.remove('hidden');
+    
+    setTimeout(() => {
+        alertDiv.classList.add('hidden');
+    }, 5000);
+}
+
+// دالة تنسيق الأسعار (من config.js)
+function formatPrice(price) {
+    return `${price} ${STORE_CONFIG.currencySymbol}`;
+}
+
+</script>
+
 </body>
-</html>
+</html>"""
+
+# حفظ الملف المحدث
+with open('admin-updated.html', 'w', encoding='utf-8') as f:
+    f.write(updated_admin_html)
+
+print("✅ تم إنشاء صفحة admin محدثة مع إصلاح مشاكل JavaScript")
