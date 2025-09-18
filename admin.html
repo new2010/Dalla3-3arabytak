@@ -1,5 +1,4 @@
-# إنشاء صفحة الأدمن كاملة مع التصميم الجديد (أحمر غامق في أسود)
-complete_admin_html = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -119,6 +118,8 @@ complete_admin_html = """<!DOCTYPE html>
         input[type="text"],
         input[type="number"],
         input[type="password"],
+        input[type="file"],
+        input[type="url"],
         textarea,
         select {
             width: 100%;
@@ -130,9 +131,15 @@ complete_admin_html = """<!DOCTYPE html>
             font-size: 16px;
         }
 
+        input[type="file"] {
+            background: rgba(139, 0, 0, 0.2);
+            border: 2px dashed #8B0000;
+        }
+
         input[type="text"]:focus,
         input[type="number"]:focus,
         input[type="password"]:focus,
+        input[type="url"]:focus,
         textarea:focus,
         select:focus {
             outline: none;
@@ -171,12 +178,12 @@ complete_admin_html = """<!DOCTYPE html>
         }
 
         .btn-success {
-            background: linear-gradient(135deg, #8B0000 0%, #006400 100%);
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             color: white;
         }
 
         .btn-success:hover {
-            background: linear-gradient(135deg, #A52A2A 0%, #228B22 100%);
+            background: linear-gradient(135deg, #34ce57 0%, #2dd4aa 100%);
         }
 
         .btn-danger {
@@ -188,6 +195,21 @@ complete_admin_html = """<!DOCTYPE html>
             background: linear-gradient(135deg, #FF6666 0%, #FF0000 100%);
         }
 
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #ffcd39 0%, #f1c40f 100%);
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 14px;
+            margin: 2px;
+        }
+
         .alert {
             padding: 15px;
             border-radius: 8px;
@@ -197,8 +219,8 @@ complete_admin_html = """<!DOCTYPE html>
         }
 
         .alert-success {
-            background: rgba(0, 100, 0, 0.2);
-            border: 2px solid #228B22;
+            background: rgba(40, 167, 69, 0.2);
+            border: 2px solid #28a745;
             color: #90EE90;
         }
 
@@ -340,13 +362,61 @@ complete_admin_html = """<!DOCTYPE html>
             display: block;
         }
 
+        .image-preview {
+            max-width: 200px;
+            max-height: 150px;
+            border: 2px solid #8B0000;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a0000 0%, #000000 100%);
+            margin: 5% auto;
+            padding: 30px;
+            border: 2px solid #8B0000;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            color: #ffcccc;
+            float: left;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #DC143C;
+        }
+
         @media (max-width: 768px) {
             .form-row {
                 grid-template-columns: 1fr;
             }
-            
+
             .stats-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 2% auto;
             }
         }
     </style>
@@ -361,25 +431,25 @@ complete_admin_html = """<!DOCTYPE html>
         <!-- قسم تسجيل الدخول -->
         <div id="loginSection" class="login-section">
             <h2 style="color: #DC143C; margin-bottom: 20px;">تسجيل دخول المدير</h2>
-            
+
             <div id="loginAlert"></div>
-            
+
             <div class="form-group">
                 <input type="password" id="adminPassword" placeholder="كلمة مرور الأدمن" value="New2010">
             </div>
-            
+
             <button class="btn btn-primary" onclick="login()">
                 <span id="loginBtn">دخول</span>
             </button>
-            
+
             <button class="btn btn-success" onclick="testAPI()">
                 اختبار الاتصال
             </button>
-            
+
             <button class="toggle-debug" onclick="toggleDebug()">
                 إظهار التشخيص
             </button>
-            
+
             <div id="debugSection" class="debug-section" style="display: none;">
                 <h3 style="color: #DC143C;">سجل التشخيص:</h3>
                 <div id="debugLog" class="debug-log">جاري تحميل نظام التشخيص...</div>
@@ -450,7 +520,7 @@ complete_admin_html = """<!DOCTYPE html>
                                 <input type="number" id="productPrice" required placeholder="350" step="0.01">
                             </div>
                         </div>
-                        
+
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="productStock">الكمية المتوفرة *</label>
@@ -467,6 +537,21 @@ complete_admin_html = """<!DOCTYPE html>
                                     <option value="أخرى">أخرى</option>
                                 </select>
                             </div>
+                        </div>
+
+                        <!-- قسم الصورة -->
+                        <div class="form-group">
+                            <label>صورة المنتج</label>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                                <input type="file" id="productImageFile" accept="image/*" style="flex: 1; min-width: 200px;">
+                                <button type="button" class="btn btn-warning btn-small" onclick="uploadProductImage()">
+                                    📤 رفع الصورة
+                                </button>
+                            </div>
+                            <div style="margin-top: 10px;">
+                                <input type="url" id="productImageUrl" placeholder="أو ادخل رابط الصورة مباشرة">
+                            </div>
+                            <div id="imagePreview" style="margin-top: 10px;"></div>
                         </div>
 
                         <div class="form-group">
@@ -506,21 +591,90 @@ complete_admin_html = """<!DOCTYPE html>
         </div>
     </div>
 
+    <!-- Modal لتعديل المنتج -->
+    <div id="editProductModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditModal()">&times;</span>
+            <h2 style="color: #DC143C; margin-bottom: 20px;">تعديل المنتج</h2>
+            <form id="editProductForm">
+                <input type="hidden" id="editProductId">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editProductName">اسم المنتج *</label>
+                        <input type="text" id="editProductName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editProductPrice">السعر (جنيه) *</label>
+                        <input type="number" id="editProductPrice" required step="0.01">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editProductStock">الكمية المتوفرة *</label>
+                        <input type="number" id="editProductStock" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editProductCategory">التصنيف</label>
+                        <select id="editProductCategory">
+                            <option value="اكسسوارات داخلية">إكسسوارات داخلية</option>
+                            <option value="اكسسوارات خارجية">إكسسوارات خارجية</option>
+                            <option value="اجهزة صوتية">أجهزة صوتية</option>
+                            <option value="اضاءة">إضاءة</option>
+                            <option value="عجلات ودواسات">عجلات ودواسات</option>
+                            <option value="أخرى">أخرى</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="editProductImageUrl">رابط الصورة</label>
+                    <input type="url" id="editProductImageUrl">
+                </div>
+
+                <div class="form-group">
+                    <label for="editProductShortDesc">وصف مختصر</label>
+                    <textarea id="editProductShortDesc" rows="2"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="editProductFeatured">
+                        <label for="editProductFeatured">منتج مميز</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-success">
+                    حفظ التعديلات
+                </button>
+                <button type="button" class="btn btn-danger" onclick="closeEditModal()">
+                    إلغاء
+                </button>
+            </form>
+        </div>
+    </div>
+
     <script>
         // إعدادات API
         const API_BASE = "https://script.google.com/macros/s/AKfycbz9BhXxl_NffalNVr0jX7-IosnIzzXMZordAd95YXVO3t0jQGYuLAGXFQ69K1gLU5M3/exec";
         let adminKey = '';
         let debugEnabled = false;
+        let allProducts = [];
+        let allOrders = [];
 
         // تحقق من الجلسة المحفوظة
         document.addEventListener('DOMContentLoaded', function() {
             addDebugLog('تم تحميل صفحة الأدمن');
-            
+
             const savedKey = sessionStorage.getItem('adminKey');
             if (savedKey) {
                 addDebugLog('تم العثور على جلسة محفوظة');
                 verifyAdminKey(savedKey);
             }
+
+            // إعداد معاينة الصور
+            setupImagePreview();
         });
 
         // دالة إضافة سجل التشخيص
@@ -529,7 +683,7 @@ complete_admin_html = """<!DOCTYPE html>
             const timestamp = now.toLocaleTimeString('ar-EG');
             const debugLog = document.getElementById('debugLog');
             if (debugLog) {
-                debugLog.textContent += `[${timestamp}] ${message}\\n`;
+                debugLog.textContent += `[${timestamp}] ${message}\n`;
                 debugLog.scrollTop = debugLog.scrollHeight;
             }
             console.log(`[${timestamp}] ${message}`);
@@ -540,7 +694,7 @@ complete_admin_html = """<!DOCTYPE html>
             const debugSection = document.getElementById('debugSection');
             debugEnabled = !debugEnabled;
             debugSection.style.display = debugEnabled ? 'block' : 'none';
-            
+
             const toggleBtn = document.querySelector('.toggle-debug');
             toggleBtn.textContent = debugEnabled ? 'إخفاء التشخيص' : 'إظهار التشخيص';
         }
@@ -560,14 +714,14 @@ complete_admin_html = """<!DOCTYPE html>
         async function testAPI() {
             addDebugLog('بدء اختبار API...');
             showAlert('جاري اختبار الاتصال...', 'info', 'loginAlert');
-            
+
             try {
                 const response = await fetch(API_BASE + '?action=test');
                 addDebugLog(`رد HTTP: ${response.status} ${response.statusText}`);
-                
+
                 const result = await response.json();
                 addDebugLog(`محتوى الرد: ${JSON.stringify(result)}`);
-                
+
                 if (result.success) {
                     showAlert('✅ الاتصال يعمل بنجاح!', 'success', 'loginAlert');
                 } else {
@@ -586,7 +740,7 @@ complete_admin_html = """<!DOCTYPE html>
                 showAlert('يرجى إدخال كلمة المرور', 'error', 'loginAlert');
                 return;
             }
-            
+
             await verifyAdminKey(password);
         }
 
@@ -594,16 +748,16 @@ complete_admin_html = """<!DOCTYPE html>
         async function verifyAdminKey(key) {
             showAlert('جاري التحقق من كلمة المرور...', 'info', 'loginAlert');
             addDebugLog('بدء التحقق من adminKey...');
-            
+
             try {
                 // استخدام orders endpoint للتحقق (يتجنب مشكلة CORS)
                 const response = await fetch(`${API_BASE}?action=orders&adminKey=${encodeURIComponent(key)}`);
-                
+
                 addDebugLog(`رد HTTP: ${response.status} ${response.statusText}`);
-                
+
                 const result = await response.json();
                 addDebugLog(`محتوى الرد: ${JSON.stringify(result)}`);
-                
+
                 if (result.success) {
                     adminKey = key;
                     sessionStorage.setItem('adminKey', adminKey);
@@ -640,32 +794,33 @@ complete_admin_html = """<!DOCTYPE html>
         async function updateStats() {
             try {
                 addDebugLog('جاري تحديث الإحصائيات...');
-                
+
                 // جلب المنتجات
                 const productsResponse = await fetch(`${API_BASE}?action=products`);
                 const productsResult = await productsResponse.json();
-                
+
                 // جلب الطلبات
                 const ordersResponse = await fetch(`${API_BASE}?action=orders&adminKey=${adminKey}`);
                 const ordersResult = await ordersResponse.json();
-                
+
                 if (productsResult.success) {
-                    document.getElementById('totalProducts').textContent = productsResult.data.length;
+                    allProducts = productsResult.data;
+                    document.getElementById('totalProducts').textContent = allProducts.length;
                 }
-                
+
                 if (ordersResult.success) {
-                    const orders = ordersResult.data;
-                    document.getElementById('totalOrders').textContent = orders.length;
-                    
-                    const pendingOrders = orders.filter(order => order.status === 'معلق').length;
+                    allOrders = ordersResult.data;
+                    document.getElementById('totalOrders').textContent = allOrders.length;
+
+                    const pendingOrders = allOrders.filter(order => order.status === 'معلق').length;
                     document.getElementById('pendingOrders').textContent = pendingOrders;
-                    
-                    const totalSales = orders.reduce((sum, order) => sum + (parseFloat(order.total) || 0), 0);
+
+                    const totalSales = allOrders.reduce((sum, order) => sum + (parseFloat(order.total) || 0), 0);
                     document.getElementById('totalSales').textContent = totalSales.toFixed(2) + ' جنيه';
                 }
-                
+
                 addDebugLog('تم تحديث الإحصائيات بنجاح');
-                
+
             } catch (error) {
                 addDebugLog(`خطأ في تحديث الإحصائيات: ${error.message}`);
             }
@@ -676,14 +831,15 @@ complete_admin_html = """<!DOCTYPE html>
             try {
                 addDebugLog('جاري تحميل المنتجات...');
                 showAlert('جاري تحميل المنتجات...', 'info', 'adminAlert');
-                
+
                 const response = await fetch(`${API_BASE}?action=products`);
                 const result = await response.json();
-                
+
                 if (result.success) {
-                    displayProducts(result.data);
-                    showAlert(`تم تحميل ${result.data.length} منتج بنجاح`, 'success', 'adminAlert');
-                    addDebugLog(`تم تحميل ${result.data.length} منتج`);
+                    allProducts = result.data;
+                    displayProducts(allProducts);
+                    showAlert(`تم تحميل ${allProducts.length} منتج بنجاح`, 'success', 'adminAlert');
+                    addDebugLog(`تم تحميل ${allProducts.length} منتج`);
                 } else {
                     showAlert('خطأ في تحميل المنتجات: ' + result.message, 'error', 'adminAlert');
                 }
@@ -696,7 +852,7 @@ complete_admin_html = """<!DOCTYPE html>
         // عرض المنتجات
         function displayProducts(products) {
             const tableContainer = document.getElementById('productsTable');
-            
+
             if (products.length === 0) {
                 tableContainer.innerHTML = '<p style="text-align: center; color: #ffcccc;">لا توجد منتجات حالياً</p>';
                 return;
@@ -706,6 +862,7 @@ complete_admin_html = """<!DOCTYPE html>
                 <table class="products-table">
                     <thead>
                         <tr>
+                            <th>الصورة</th>
                             <th>المعرف</th>
                             <th>الاسم</th>
                             <th>السعر</th>
@@ -719,8 +876,13 @@ complete_admin_html = """<!DOCTYPE html>
             `;
 
             products.forEach(product => {
+                const imageHtml = product.image_url ? 
+                    `<img src="${product.image_url}" class="image-preview" style="max-width: 50px; max-height: 50px;">` :
+                    '📷';
+
                 html += `
                     <tr>
+                        <td>${imageHtml}</td>
                         <td>${product.id}</td>
                         <td>${product.name}</td>
                         <td>${parseFloat(product.price).toFixed(2)} جنيه</td>
@@ -728,8 +890,11 @@ complete_admin_html = """<!DOCTYPE html>
                         <td>${product.category || 'غير محدد'}</td>
                         <td>${product.featured ? 'نعم' : 'لا'}</td>
                         <td>
-                            <button class="btn btn-danger" onclick="deleteProduct('${product.id}')">
-                                حذف
+                            <button class="btn btn-warning btn-small" onclick="editProduct('${product.id}')">
+                                ✏️ تعديل
+                            </button>
+                            <button class="btn btn-danger btn-small" onclick="deleteProduct('${product.id}')">
+                                🗑️ حذف
                             </button>
                         </td>
                     </tr>
@@ -744,13 +909,14 @@ complete_admin_html = """<!DOCTYPE html>
         async function loadOrders() {
             try {
                 addDebugLog('جاري تحميل الطلبات...');
-                
+
                 const response = await fetch(`${API_BASE}?action=orders&adminKey=${adminKey}`);
                 const result = await response.json();
-                
+
                 if (result.success) {
-                    displayOrders(result.data);
-                    addDebugLog(`تم تحميل ${result.data.length} طلب`);
+                    allOrders = result.data;
+                    displayOrders(allOrders);
+                    addDebugLog(`تم تحميل ${allOrders.length} طلب`);
                 } else {
                     showAlert('خطأ في تحميل الطلبات: ' + result.message, 'error', 'adminAlert');
                 }
@@ -763,7 +929,7 @@ complete_admin_html = """<!DOCTYPE html>
         // عرض الطلبات
         function displayOrders(orders) {
             const tableContainer = document.getElementById('ordersTable');
-            
+
             if (orders.length === 0) {
                 tableContainer.innerHTML = '<p style="text-align: center; color: #ffcccc;">لا توجد طلبات حالياً</p>';
                 return;
@@ -796,7 +962,7 @@ complete_admin_html = """<!DOCTYPE html>
                         <td>${order.address}</td>
                         <td>${parseFloat(order.total).toFixed(2)} جنيه</td>
                         <td>
-                            <select onchange="updateOrderStatus('${order.order_id}', this.value)">
+                            <select onchange="updateOrderStatus('${order.order_id}', this.value)" style="background: rgba(0,0,0,0.5); color: white; border: 1px solid #8B0000; padding: 5px;">
                                 <option value="معلق" ${order.status === 'معلق' ? 'selected' : ''}>معلق</option>
                                 <option value="قيد التحضير" ${order.status === 'قيد التحضير' ? 'selected' : ''}>قيد التحضير</option>
                                 <option value="جاري الشحن" ${order.status === 'جاري الشحن' ? 'selected' : ''}>جاري الشحن</option>
@@ -806,8 +972,11 @@ complete_admin_html = """<!DOCTYPE html>
                         </td>
                         <td>${date}</td>
                         <td>
-                            <button class="btn btn-primary" onclick="viewOrderDetails('${order.order_id}')">
-                                التفاصيل
+                            <button class="btn btn-primary btn-small" onclick="viewOrderDetails('${order.order_id}')">
+                                👁️ التفاصيل
+                            </button>
+                            <button class="btn btn-danger btn-small" onclick="deleteOrder('${order.order_id}')">
+                                🗑️ حذف
                             </button>
                         </td>
                     </tr>
@@ -818,10 +987,68 @@ complete_admin_html = """<!DOCTYPE html>
             tableContainer.innerHTML = html;
         }
 
+        // إعداد معاينة الصور
+        function setupImagePreview() {
+            const imageUrlInput = document.getElementById('productImageUrl');
+            const imageFileInput = document.getElementById('productImageFile');
+            const imagePreview = document.getElementById('imagePreview');
+
+            // معاينة رابط الصورة
+            imageUrlInput.addEventListener('input', function() {
+                const url = this.value.trim();
+                if (url) {
+                    imagePreview.innerHTML = `<img src="${url}" class="image-preview" alt="معاينة الصورة">`;
+                } else {
+                    imagePreview.innerHTML = '';
+                }
+            });
+
+            // معاينة الملف المرفوع
+            imageFileInput.addEventListener('change', function() {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.innerHTML = `<img src="${e.target.result}" class="image-preview" alt="معاينة الصورة">`;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // رفع صورة المنتج
+        async function uploadProductImage() {
+            const fileInput = document.getElementById('productImageFile');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                showAlert('يرجى اختيار صورة أولاً', 'error', 'adminAlert');
+                return;
+            }
+
+            showAlert('جاري رفع الصورة...', 'info', 'adminAlert');
+
+            try {
+                // هنا يمكن استخدام خدمة رفع حقيقية مثل Imgur أو Cloudinary
+                // حالياً سننشئ رابط محلي
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageUrl = e.target.result;
+                    document.getElementById('productImageUrl').value = imageUrl;
+                    showAlert('تم رفع الصورة بنجاح!', 'success', 'adminAlert');
+                };
+                reader.readAsDataURL(file);
+
+            } catch (error) {
+                addDebugLog(`خطأ في رفع الصورة: ${error.message}`);
+                showAlert('خطأ في رفع الصورة: ' + error.message, 'error', 'adminAlert');
+            }
+        }
+
         // إضافة منتج جديد
         document.getElementById('addProductForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
             const productData = {
                 action: 'addProduct',
                 adminKey: adminKey,
@@ -829,26 +1056,27 @@ complete_admin_html = """<!DOCTYPE html>
                 price: parseFloat(document.getElementById('productPrice').value),
                 stock: parseInt(document.getElementById('productStock').value),
                 category: document.getElementById('productCategory').value,
+                image_url: document.getElementById('productImageUrl').value,
                 image_desc: document.getElementById('productImageDesc').value,
                 short_desc: document.getElementById('productShortDesc').value,
                 long_desc: document.getElementById('productLongDesc').value,
                 tags: document.getElementById('productTags').value,
                 featured: document.getElementById('productFeatured').checked
             };
-            
+
             addDebugLog(`إضافة منتج: ${JSON.stringify(productData)}`);
             showAlert('جاري إضافة المنتج...', 'info', 'adminAlert');
-            
+
             try {
-                // محاولة POST أولاً مع FormData
+                // استخدام FormData لتجنب مشاكل CORS
                 const formData = new FormData();
                 for (const [key, value] of Object.entries(productData)) {
                     formData.append(key, value);
                 }
-                
+
                 let response;
                 let method = 'POST';
-                
+
                 try {
                     response = await fetch(API_BASE, {
                         method: 'POST',
@@ -858,23 +1086,24 @@ complete_admin_html = """<!DOCTYPE html>
                     // إذا فشل POST، استخدم GET
                     addDebugLog('POST فشل، جاري المحاولة بـ GET...');
                     method = 'GET';
-                    
+
                     const params = new URLSearchParams();
                     for (const [key, value] of Object.entries(productData)) {
                         params.append(key, value);
                     }
-                    
+
                     response = await fetch(`${API_BASE}?${params.toString()}`);
                 }
-                
+
                 addDebugLog(`رد إضافة المنتج (${method}): ${response.status} ${response.statusText}`);
-                
+
                 const result = await response.json();
                 addDebugLog(`نتيجة إضافة المنتج: ${JSON.stringify(result)}`);
-                
+
                 if (result.success) {
                     showAlert('✅ تم إضافة المنتج بنجاح!', 'success', 'adminAlert');
                     document.getElementById('addProductForm').reset();
+                    document.getElementById('imagePreview').innerHTML = '';
                     await loadProducts();
                     await updateStats();
                 } else {
@@ -886,19 +1115,91 @@ complete_admin_html = """<!DOCTYPE html>
             }
         });
 
-        // حذف منتج
-        async function deleteProduct(productId) {
-            if (!confirm('هل أنت متأكد من حذف هذا المنتج؟')) {
+        // تعديل منتج
+        function editProduct(productId) {
+            const product = allProducts.find(p => p.id === productId);
+            if (!product) {
+                showAlert('المنتج غير موجود', 'error', 'adminAlert');
                 return;
             }
-            
+
+            // ملء النموذج
+            document.getElementById('editProductId').value = product.id;
+            document.getElementById('editProductName').value = product.name;
+            document.getElementById('editProductPrice').value = product.price;
+            document.getElementById('editProductStock').value = product.stock;
+            document.getElementById('editProductCategory').value = product.category;
+            document.getElementById('editProductImageUrl').value = product.image_url || '';
+            document.getElementById('editProductShortDesc').value = product.short_desc || '';
+            document.getElementById('editProductFeatured').checked = product.featured;
+
+            // إظهار المودال
+            document.getElementById('editProductModal').style.display = 'block';
+        }
+
+        // إغلاق مودال التعديل
+        function closeEditModal() {
+            document.getElementById('editProductModal').style.display = 'none';
+        }
+
+        // حفظ تعديلات المنتج
+        document.getElementById('editProductForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const productData = {
+                action: 'updateProduct',
+                adminKey: adminKey,
+                id: document.getElementById('editProductId').value,
+                name: document.getElementById('editProductName').value,
+                price: parseFloat(document.getElementById('editProductPrice').value),
+                stock: parseInt(document.getElementById('editProductStock').value),
+                category: document.getElementById('editProductCategory').value,
+                image_url: document.getElementById('editProductImageUrl').value,
+                short_desc: document.getElementById('editProductShortDesc').value,
+                featured: document.getElementById('editProductFeatured').checked
+            };
+
+            addDebugLog(`تحديث منتج: ${JSON.stringify(productData)}`);
+            showAlert('جاري تحديث المنتج...', 'info', 'adminAlert');
+
+            try {
+                const params = new URLSearchParams();
+                for (const [key, value] of Object.entries(productData)) {
+                    params.append(key, value);
+                }
+
+                const response = await fetch(`${API_BASE}?${params.toString()}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert('✅ تم تحديث المنتج بنجاح!', 'success', 'adminAlert');
+                    closeEditModal();
+                    await loadProducts();
+                    await updateStats();
+                } else {
+                    showAlert('❌ خطأ في تحديث المنتج: ' + result.message, 'error', 'adminAlert');
+                }
+            } catch (error) {
+                addDebugLog(`خطأ في تحديث المنتج: ${error.message}`);
+                showAlert('❌ خطأ في الاتصال: ' + error.message, 'error', 'adminAlert');
+            }
+        });
+
+        // حذف منتج
+        async function deleteProduct(productId) {
+            if (!confirm('هل أنت متأكد من حذف هذا المنتج؟\n\nهذا الإجراء لا يمكن التراجع عنه!')) {
+                return;
+            }
+
             addDebugLog(`حذف المنتج: ${productId}`);
             showAlert('جاري حذف المنتج...', 'info', 'adminAlert');
-            
+
             try {
                 const response = await fetch(`${API_BASE}?action=deleteProduct&adminKey=${adminKey}&id=${productId}`);
                 const result = await response.json();
-                
+
+                addDebugLog(`نتيجة حذف المنتج: ${JSON.stringify(result)}`);
+
                 if (result.success) {
                     showAlert('✅ تم حذف المنتج بنجاح!', 'success', 'adminAlert');
                     await loadProducts();
@@ -915,16 +1216,20 @@ complete_admin_html = """<!DOCTYPE html>
         // تحديث حالة الطلب
         async function updateOrderStatus(orderId, newStatus) {
             addDebugLog(`تحديث حالة الطلب: ${orderId} إلى ${newStatus}`);
-            
+
             try {
-                const response = await fetch(`${API_BASE}?action=updateOrderStatus&adminKey=${adminKey}&order_id=${orderId}&status=${newStatus}`);
+                const response = await fetch(`${API_BASE}?action=updateOrderStatus&adminKey=${adminKey}&order_id=${orderId}&status=${encodeURIComponent(newStatus)}`);
                 const result = await response.json();
-                
+
+                addDebugLog(`نتيجة تحديث حالة الطلب: ${JSON.stringify(result)}`);
+
                 if (result.success) {
                     showAlert('✅ تم تحديث حالة الطلب!', 'success', 'adminAlert');
                     await updateStats();
                 } else {
                     showAlert('❌ خطأ في تحديث الطلب: ' + result.message, 'error', 'adminAlert');
+                    // إعادة تحميل الطلبات لاستعادة الحالة السابقة
+                    await loadOrders();
                 }
             } catch (error) {
                 addDebugLog(`خطأ في تحديث الطلب: ${error.message}`);
@@ -932,11 +1237,71 @@ complete_admin_html = """<!DOCTYPE html>
             }
         }
 
+        // حذف طلب
+        async function deleteOrder(orderId) {
+            if (!confirm('هل أنت متأكد من حذف هذا الطلب؟\n\nهذا الإجراء لا يمكن التراجع عنه!')) {
+                return;
+            }
+
+            addDebugLog(`حذف الطلب: ${orderId}`);
+            showAlert('جاري حذف الطلب...', 'info', 'adminAlert');
+
+            try {
+                const response = await fetch(`${API_BASE}?action=deleteOrder&adminKey=${adminKey}&order_id=${orderId}`);
+                const result = await response.json();
+
+                addDebugLog(`نتيجة حذف الطلب: ${JSON.stringify(result)}`);
+
+                if (result.success) {
+                    showAlert('✅ تم حذف الطلب بنجاح!', 'success', 'adminAlert');
+                    await loadOrders();
+                    await updateStats();
+                } else {
+                    showAlert('❌ خطأ في حذف الطلب: ' + result.message, 'error', 'adminAlert');
+                }
+            } catch (error) {
+                addDebugLog(`خطأ في حذف الطلب: ${error.message}`);
+                showAlert('❌ خطأ في الاتصال: ' + error.message, 'error', 'adminAlert');
+            }
+        }
+
         // عرض تفاصيل الطلب
         function viewOrderDetails(orderId) {
+            const order = allOrders.find(o => o.order_id === orderId);
+            if (!order) {
+                showAlert('الطلب غير موجود', 'error', 'adminAlert');
+                return;
+            }
+
+            let itemsText = 'لا توجد تفاصيل';
+            try {
+                const items = JSON.parse(order.items_json || '[]');
+                itemsText = items.map(item => 
+                    `- ${item.name} (الكمية: ${item.quantity}, السعر: ${item.price} جنيه)`
+                ).join('\n');
+            } catch (e) {
+                itemsText = order.items_json || 'خطأ في قراءة البيانات';
+            }
+
+            const details = `
+تفاصيل الطلب: ${orderId}
+==================
+العميل: ${order.customer_name}
+الهاتف: ${order.phone}
+العنوان: ${order.address}
+الحالة: ${order.status}
+التاريخ: ${new Date(order.created_at).toLocaleString('ar-EG')}
+
+المنتجات:
+${itemsText}
+
+المجموع الفرعي: ${order.subtotal} جنيه
+الشحن: ${order.shipping} جنيه
+المجموع الكلي: ${order.total} جنيه
+            `.trim();
+
+            alert(details);
             addDebugLog(`عرض تفاصيل الطلب: ${orderId}`);
-            // يمكن إضافة modal أو صفحة منفصلة لعرض التفاصيل
-            alert(`سيتم عرض تفاصيل الطلب: ${orderId}`);
         }
 
         // التبديل بين التبويبات
@@ -945,23 +1310,26 @@ complete_admin_html = """<!DOCTYPE html>
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
-            
+
             // إخفاء جميع أزرار التبويبات
             document.querySelectorAll('.tab').forEach(btn => {
                 btn.classList.remove('active');
             });
-            
+
             // إظهار التبويب المحدد
             document.getElementById(tabName + 'Tab').classList.add('active');
             event.target.classList.add('active');
-            
+
             addDebugLog(`تم التبديل إلى تبويب: ${tabName}`);
+        }
+
+        // إغلاق المودال عند النقر خارجه
+        window.onclick = function(event) {
+            const modal = document.getElementById('editProductModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
         }
     </script>
 </body>
-</html>"""
-
-with open('admin-final.html', 'w', encoding='utf-8') as f:
-    f.write(complete_admin_html)
-
-print("✅ تم إنشاء صفحة الأدمن كاملة مع التصميم الأحمر الغامق")
+</html>
