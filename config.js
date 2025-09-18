@@ -1,6 +1,6 @@
 // إعدادات API للمتجر
 // بعد نشر Google Apps Script، ضع الرابط هنا
-const API_BASE = "https://script.google.com/macros/s/AKfycbysPElvkXcZxAE1XDlgCV20gn4RemYqc3mEQYs3_XFI1oR16l6Zqzmyv2-UiOvVodA/exec";
+const API_BASE = "https://script.google.com/macros/s/AKfycbz6Zoy8aZnJcaovAuI32BZ62wEppk3yBQT3yKYrbinnidMjMWunEnV7DtYwSx8w84dC/exec";
 
 // ملاحظة: لا تضع ADMIN_KEY هنا أبداً
 // سيتم إدخال ADMIN_KEY يدوياً في لوحة الأدمن عند تسجيل الدخول
